@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light dark}html{padding-top:env(safe-area-inset-top,0px)}body{margin:0}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>'s 介護旅行アセスメント</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Zen+Maru+Gothic:wght@500;700&display=swap">
+<style>
+/* Layout: 1カラムのステップ式ヒアリング。上に進捗、下に概算と操作バーを固定。 */
+:root{
+  --bg:#F2F6F6; --surface:#FFFFFF; --ink:#14303A; --muted:#5A6F77; --line:#D3DFE1;
+  --accent:#0E7A6B; --accent-ink:#FFFFFF; --accent-soft:#DDF1EC;
+  --warn:#8F5206; --warn-soft:#FBEBD3; --crit:#B23A3A;
+  --font-display:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;
+  --font-body:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1B20; --surface:#16262D; --ink:#E6EFF1; --muted:#9BB0B7; --line:#2A3E46;
+  --accent:#4FC3AE; --accent-ink:#08221D; --accent-soft:#163B37;
+  --warn:#F0B45A; --warn-soft:#3A2C12; --crit:#F08A8A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F1B20; --surface:#16262D; --ink:#E6EFF1; --muted:#9BB0B7; --line:#2A3E46;
+  --accent:#4FC3AE; --accent-ink:#08221D; --accent-soft:#163B37;
+  --warn:#F0B45A; --warn-soft:#3A2C12; --crit:#F08A8A; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.7;padding-inline:16px;padding-block:0 120px}
+.wrap{max-width:640px;margin-inline:auto}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+header.top{padding-block:20px 12px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.logo{font-family:var(--font-display);font-weight:700;font-size:44px;line-height:1;color:var(--accent);letter-spacing:-.02em}
+.top h1{font-family:var(--font-display);font-size:17px;font-weight:700;margin:0;line-height:1.3}
+.top p{margin:0;color:var(--muted);font-size:13px;flex-basis:100%}
+
+.prog{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:8px 10px;border-bottom:1px solid var(--line)}
+.prog-bar{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.prog-bar i{height:5px;background:var(--line);display:block}
+.prog-bar i.on{background:var(--accent)}
+.prog-label{display:flex;justify-content:space-between;margin-top:6px;font-size:13px;color:var(--muted)}
+.prog-label b{color:var(--ink);font-family:var(--font-display)}
+
+h2{font-family:var(--font-display);font-size:22px;line-height:1.35;margin:24px 0 4px;text-wrap:balance}
+.lead{color:var(--muted);margin:0 0 16px;font-size:14px}
+h3{font-family:var(--font-display);font-size:15px;margin:0 0 8px;display:flex;align-items:center;gap:8px}
+h3::before{content:"";width:4px;height:16px;background:var(--accent)}
+
+.card{background:var(--surface);border:1px solid var(--line);padding:16px;margin-bottom:14px;border-radius:12px}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field:last-child{margin-bottom:0}
+label,.lab{font-size:13px;color:var(--muted);font-weight:500}
+.hint{font-size:12.5px;color:var(--muted);margin:0}
+input[type=text],input[type=number]{width:100%;min-height:48px;padding:8px 12px;border:1px solid var(--line);background:var(--bg);border-radius:8px}
+input:focus{border-color:var(--accent)}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:44px;padding:6px 14px;border:1px solid var(--line);background:var(--surface);border-radius:8px}
+.chip[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700}
+
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;align-items:center;padding-block:10px;border-top:1px solid var(--line)}
+.row:first-of-type{border-top:0;padding-top:0}
+.row .nm{font-weight:500}
+.seg{display:inline-grid;grid-auto-flow:column;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{min-height:44px;min-width:64px;padding:4px 10px;border:0;border-left:1px solid var(--line);background:var(--surface);font-size:13px}
+.seg button:first-child{border-left:0}
+.seg button[aria-pressed=true]{background:var(--accent);color:var(--accent-ink);font-weight:700}
+.seg button[aria-pressed=true].lv2{background:var(--warn);color:var(--surface)}
+@media (max-width:440px){.row{grid-template-columns:1fr}.seg{display:grid;grid-auto-flow:unset;grid-template-columns:repeat(3,1fr)}.seg.two{grid-template-columns:repeat(2,1fr)}}
+.seg.two{grid-template-columns:none}
+
+.stepper{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:8px;overflow:hidden;align-self:flex-start}
+.stepper button{width:48px;height:48px;border:0;background:var(--surface);font-size:22px}
+.stepper output{min-width:88px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums;border-inline:1px solid var(--line);line-height:48px}
+.stepper button:disabled{opacity:.35;cursor:default}
+
+.gauge{height:14px;background:linear-gradient(90deg,var(--accent-soft) 0 33.3%,var(--warn-soft) 33.3% 66.6%,color-mix(in srgb,var(--crit) 25%,var(--surface)) 66.6% 100%);position:relative;border:1px solid var(--line);margin:14px 0 6px}
+.gauge i{position:absolute;top:-6px;width:4px;height:24px;background:var(--ink);transform:translateX(-2px)}
+.gauge-l{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+.level{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.level b{font-family:var(--font-display);font-size:30px;line-height:1.1}
+.level span{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+.pill{display:inline-block;padding:1px 10px;border-radius:99px;font-size:12px;font-weight:700;background:var(--accent-soft);color:var(--accent)}
+.pill.w{background:var(--warn-soft);color:var(--warn)}
+.notes{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.notes li{padding-left:16px;position:relative}
+.notes li::before{content:"";position:absolute;left:0;top:.75em;width:6px;height:6px;background:var(--accent)}
+.notes li.w::before{background:var(--warn)}
+.notes li.w{color:var(--warn)}
+.need{display:flex;flex-wrap:wrap;gap:6px}
+
+.q-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:12px}
+.q-head .logo{font-size:36px}
+.q-meta{font-size:12.5px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.q-to{font-family:var(--font-display);font-size:18px;font-weight:700;margin:0 0 10px}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;min-width:440px}
+th{font-size:12px;color:var(--muted);font-weight:500;text-align:right;padding:6px 8px;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:right;vertical-align:top}
+td small{display:block;color:var(--muted);font-size:12px;line-height:1.5}
+.sum{margin-top:10px;margin-left:auto;max-width:300px;font-variant-numeric:tabular-nums}
+.sum div{display:flex;justify-content:space-between;padding:4px 0}
+.sum .tot{border-top:2px solid var(--ink);margin-top:6px;padding-top:8px;font-family:var(--font-display);font-size:22px;font-weight:700}
+.fine{font-size:12.5px;color:var(--muted);margin:10px 0 0}
+details{margin-bottom:14px}
+summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:500}
+.prices{display:grid;gap:8px;margin-top:6px}
+.prices label{display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:8px;align-items:center;color:var(--ink);font-size:13.5px}
+.prices input{min-height:40px;text-align:right}
+
+.consent{border:2px solid var(--accent);background:var(--surface);padding:16px;border-radius:12px}
+.check{display:flex;gap:12px;align-items:flex-start;min-height:44px;cursor:pointer;color:var(--ink);font-size:14.5px}
+.check input{width:24px;height:24px;margin:2px 0 0;flex:none;accent-color:var(--accent)}
+.btn{min-height:52px;padding:8px 20px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);font-weight:700;font-family:var(--font-display);font-size:16px;border-radius:10px;width:100%}
+.btn:disabled{background:var(--line);border-color:var(--line);color:var(--muted);cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--accent)}
+.done{border:2px solid var(--accent);background:var(--accent-soft);padding:16px;border-radius:12px}
+.done h3::before{display:none}
+.done textarea{width:100%;min-height:200px;margin-top:10px;padding:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:13px/1.6 var(--font-body);border-radius:8px}
+
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--surface);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px))}
+.bar-in{max-width:640px;margin-inline:auto;display:flex;align-items:center;gap:12px}
+.est{flex:1;min-width:0;line-height:1.3}
+.est small{display:block;color:var(--muted);font-size:11.5px}
+.est b{font-family:var(--font-display);font-size:20px;font-variant-numeric:tabular-nums}
+.nav{min-height:48px;padding:6px 18px;border:1px solid var(--line);background:var(--surface);border-radius:10px;font-weight:500}
+.nav.go{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:700;padding-inline:26px}
+@media (prefers-reduced-motion:no-preference){.gauge i{transition:left .3s}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="logo" aria-label="エスズ">'s</div>
+    <h1>介護旅行アセスメント &amp; お見積り</h1>
+    <p>ヒアリング項目をタップすると、必要な介助体制と料金の見積書がその場でできます。</p>
+  </header>
+  <nav class="prog" aria-label="進捗">
+    <div class="prog-bar" id="pbar"></div>
+    <div class="prog-label"><b id="plabel"></b><span id="pcount"></span></div>
+  </nav>
+  <main id="app"></main>
+</div>
+
+<div class="bar" id="bar"><div class="bar-in">
+  <div class="est"><small>概算（税込）</small><b id="est">¥0</b></div>
+  <button class="nav" data-act="back" id="bBack">戻る</button>
+  <button class="nav go" data-act="next" id="bNext">次へ</button>
+</div></div>
+
+<script>
+/* ---------- データ定義 ---------- */
+const STEPS=['旅行者','認定調査項目','旅の条件','アセスメント','見積・注文'];
+const CARE=['自立','要支援1','要支援2','要介護1','要介護2','要介護3','要介護4','要介護5','未申請'];
+const ADL_GROUPS=[
+ {t:'移動・動作',items:['寝返り','起き上がり','座位保持','立ち上がり','歩行','移乗','移動']},
+ {t:'身のまわり',items:['食事摂取','排尿','排便','口腔清潔','入浴（洗身）','着脱衣']}
+];
+const ADL_OPT=['できる','一部介助','全介助'];
+const COG=['意思疎通','徘徊','昼夜逆転','介護への抵抗','不安・大声'];
+const COG_OPT=['なし','ときどき','頻繁'];
+const MED=['胃ろう','痰の吸引','酸素療法','導尿カテーテル','インスリン注射','褥瘡の処置','ストーマ'];
+const TRANSPORT=['福祉車両（貸切）','公共交通','新幹線','飛行機'];
+const WHEEL=['自分の車いすを持参','レンタルを希望','車いすは不要'];
+const MEAL=['常食','刻み食','ミキサー食','とろみ対応'];
+const LODGE=['段差なし客室','手すり付トイレ','介護ベッド','浴室の介助設備','エレベーター直結'];
+
+const PRICE_DEF={
+ base:['基本手配・コーディネート',15000,'件'],
+ assess:['事前アセスメント・旅程設計',10000,'件'],
+ move:['移動介助（乗降・移乗）',4000,'区間'],
+ escortCare:['同行支援　介助同行（介護福祉士）',25000,'日・人'],
+ escortSup:['同行支援　サポート同行（家族介助あり）',15000,'日・人'],
+ nurse:['同行支援　看護師',35000,'日'],
+ survey:['現地事前調査',25000,'か所'],
+ car:['福祉車両の手配',15000,'日'],
+ wheel:['車いすレンタル手配',2000,'日'],
+ lodge:['宿泊設備の確認・手配',5000,'件']
+};
+const P={};Object.keys(PRICE_DEF).forEach(k=>P[k]=PRICE_DEF[k][1]);
+
+const S={
+ step:0,name:'',age:'',care:'要介護2',comp:1,family:'あり',
+ adl:{'寝返り':0,'起き上がり':0,'座位保持':0,'立ち上がり':1,'歩行':1,'移乗':1,'移動':1,'食事摂取':0,'排尿':1,'排便':0,'口腔清潔':0,'入浴（洗身）':2,'着脱衣':1},
+ cog:{'意思疎通':0,'徘徊':0,'昼夜逆転':0,'介護への抵抗':0,'不安・大声':0},
+ med:[],
+ days:2,transport:'福祉車両（貸切）',wheel:'レンタルを希望',meal:'常食',lodge:['段差なし客室','手すり付トイレ'],
+ moveAssist:'あり',segments:4,escort:'あり',survey:'あり',sites:2,
+ applicant:'',agree:false,order:null
+};
+const today=new Date();
+const pad=n=>String(n).padStart(2,'0');
+const ymd=today.getFullYear()+pad(today.getMonth()+1)+pad(today.getDate());
+const seq=String(Math.floor(100+Math.random()*900));
+const QNO='Q-'+ymd+'-'+seq;
+const fmtD=d=>d.toLocaleDateString('ja-JP',{year:'numeric',month:'long',day:'numeric'});
+const valid=new Date(today.getTime()+30*86400000);
+const yen=n=>'¥'+Math.round(n).toLocaleString('ja-JP');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const $=s=>document.querySelector(s);
+
+/* ---------- 計算 ---------- */
+function assess(){
+ const adlSum=Object.values(S.adl).reduce((a,b)=>a+b,0);
+ const cogSum=Object.values(S.cog).reduce((a,b)=>a+b,0);
+ const medN=S.med.length;
+ const total=adlSum+cogSum+medN*3;
+ const level=total<=6?'A':total<=18?'B':'C';
+ const name={A:'見守り中心',B:'部分介助が必要',C:'全面的な介助が必要'}[level];
+ let staff=level==='C'?2:1;
+ const nurse=medN>0?1:0;
+ const care=Math.max(0,staff-nurse);
+ const need=[];
+ Object.entries(S.adl).forEach(([k,v])=>{if(v>0)need.push([k,v])});
+ return {adlSum,cogSum,medN,total,level,name,staff,nurse,care,need,max:28+10+21};
+}
+function calc(){
+ const a=assess(),L=[];
+ const nights=Math.max(0,S.days-1);
+ const add=(key,qty,detail)=>{if(qty>0)L.push({name:PRICE_DEF[key][0],detail:detail||'',unit:P[key],qty,unitLabel:PRICE_DEF[key][2],amt:P[key]*qty})};
+ add('base',1);
+ add('assess',1);
+ if(S.moveAssist==='あり')add('move',S.segments,'乗降・車いす移乗の補助');
+ if(S.escort==='あり'){
+   const key=S.family==='あり'?'escortSup':'escortCare';
+   add(key,S.days*a.care,a.care+'名 × '+S.days+'日');
+   add('nurse',S.days*a.nurse,a.nurse+'名 × '+S.days+'日');
+ }
+ if(S.survey==='あり')add('survey',S.sites,'交通費などの実費は別途');
+ if(S.transport==='福祉車両（貸切）')add('car',S.days,'車両・運転手の手配');
+ if(S.wheel==='レンタルを希望')add('wheel',S.days);
+ if(S.lodge.length>0)add('lodge',1,S.lodge.join('、'));
+ const sub=L.reduce((s,l)=>s+l.amt,0);
+ const tax=Math.floor(sub*0.1);
+ return {L,sub,tax,total:sub+tax,a,nights};
+}
+function reasons(){
+ const a=assess(),r=[];
+ const adl=S.adl;
+ if(a.level==='A')r.push('日常動作はおおむねできています。見守り中心で無理のない旅程を組めます。');
+ if(a.level==='B')r.push('部分的な介助が必要です。移動と、入浴・排泄の場面に介助者の同行を推奨します。');
+ if(a.level==='C')r.push('全般に介助が必要です。介助者2名体制、福祉車両、ゆとりのある日程を推奨します。');
+ if(adl['移乗']===2)r.push('移乗が全介助です。車・ベッド・トイレの各場面で、介助者2名または移乗機器の有無を事前に確認します。');
+ else if(adl['移乗']===1)r.push('移乗に一部介助が必要です。乗降しやすい座席高の車両と、手すりのある宿泊先を選びます。');
+ if(adl['歩行']>0||adl['移動']>0){
+   r.push(S.transport==='公共交通'||S.transport==='新幹線'?'歩行に介助が必要です。乗換えが少なく、エレベーターで移動できる経路を確認します。':'歩行に介助が必要です。駐車場から目的地までの距離と段差を事前調査で確認します。');
+ }
+ if(adl['排尿']>0||adl['排便']>0)r.push('排泄に介助が必要です。多機能トイレの位置を調べ、移動の合間に休憩を組み込みます。');
+ if(adl['入浴（洗身）']>0)r.push('入浴に介助が必要です。浴室の介助設備がある宿泊先、または部屋付き風呂を優先し、難しい日は清拭に切り替えます。');
+ if(S.meal!=='常食')r.push('食事形態は「'+S.meal+'」です。宿泊先と食事処へ事前に連絡します。');
+ if(S.cog['徘徊']>0)r.push('徘徊があります。宿泊先での見守り体制と、夜間の動線を確認します。');
+ if(S.cog['意思疎通']>0)r.push('意思疎通に配慮が必要です。旅程の確認はご家族と一緒に行います。');
+ if(S.cog['昼夜逆転']>0||S.cog['不安・大声']>0)r.push('生活リズムと気持ちの安定に配慮し、環境の変化が少ない旅程にします。');
+ if(a.medN>0)r.push('医療的ケアがあるため、看護師の同行を含めます。主治医への旅行可否の確認と、薬・医療機器の持参手順を事前に整理します。');
+ const w=[];
+ if(S.escort==='なし'&&a.level!=='A')w.push('この状態で同行支援なしの旅行は、安全面から推奨できません。');
+ if(S.family==='なし'&&a.level==='C')w.push('家族介助がなく、全面的な介助が必要です。介助者の増員も検討します。');
+ if(S.transport==='飛行機'&&(adl['移乗']===2||a.medN>0))w.push('航空会社の搬送・医療機器持込みの規定を事前に確認する必要があります。');
+ return {r,w};
+}
+
+/* ---------- 部品 ---------- */
+const chips=(key,opts,val,multi)=>'<div class="chips">'+opts.map(o=>{
+  const on=multi?val.includes(o):val===o;
+  return `<button class="chip" aria-pressed="${on}" data-act="${multi?'tog':'set'}" data-k="${key}" data-v="${esc(o)}">${esc(o)}</button>`}).join('')+'</div>';
+const seg=(key,opts,val,cls)=>`<div class="seg ${cls||''}" role="group">`+opts.map((o,i)=>
+  `<button class="lv${i}" aria-pressed="${val===i}" data-act="set" data-n="1" data-k="${key}" data-v="${i}">${esc(o)}</button>`).join('')+'</div>';
+const segS=(key,opts,val)=>'<div class="seg two" role="group" style="grid-template-columns:repeat('+opts.length+',1fr)">'+opts.map(o=>
+  `<button aria-pressed="${val===o}" data-act="set" data-k="${key}" data-v="${esc(o)}">${esc(o)}</button>`).join('')+'</div>';
+const stepper=(key,val,min,max,unit)=>`<div class="stepper"><button data-act="stp" data-k="${key}" data-d="-1" data-min="${min}" data-max="${max}" ${val<=min?'disabled':''} aria-label="減らす">−</button><output>${val}${unit}</output><button data-act="stp" data-k="${key}" data-d="1" data-min="${min}" data-max="${max}" ${val>=max?'disabled':''} aria-label="増やす">＋</button></div>`;
+
+/* ---------- 各ステップ ---------- */
+function v0(){return `
+<h2>まず、旅行される方について教えてください</h2>
+<p class="lead">お名前は見積書の宛名に使います。</p>
+<div class="card">
+ <div class="field"><label for="name">ご本人のお名前</label><input type="text" id="name" data-in="name" value="${esc(S.name)}" placeholder="例：山田 花子" autocomplete="off"></div>
+ <div class="field"><label for="age">年齢</label><input type="number" id="age" data-in="age" value="${esc(S.age)}" placeholder="例：82" inputmode="numeric" min="0" max="120"></div>
+ <div class="field"><span class="lab">要介護度</span>${chips('care',CARE,S.care)}</div>
+</div>
+<div class="card">
+ <div class="field"><span class="lab">同行するご家族・友人の人数（介助者を除く）</span>${stepper('comp',S.comp,0,6,'名')}</div>
+ <div class="field"><span class="lab">家族介助</span>${segS('family',['あり','なし'],S.family)}
+  <p class="hint">「あり」は、ご家族が旅行中の介助を担える場合です。同行支援の単価が「サポート同行」になります。</p></div>
+</div>`}
+
+function v1(){
+ const g=ADL_GROUPS.map(gr=>`<div class="card"><h3>${gr.t}</h3>`+gr.items.map(it=>`
+  <div class="row"><span class="nm">${it}</span>${seg('adl.'+it,ADL_OPT,S.adl[it])}</div>`).join('')+'</div>').join('');
+ const cog=`<div class="card"><h3>認知・行動</h3>`+COG.map(it=>`
+  <div class="row"><span class="nm">${it}</span>${seg('cog.'+it,COG_OPT,S.cog[it])}</div>`).join('')+'</div>';
+ const med=`<div class="card"><h3>医療的ケア</h3><p class="hint" style="margin-bottom:10px">当てはまるものをすべてタップ。なければそのまま次へ。</p>${chips('med',MED,S.med,true)}</div>`;
+ return `<h2>認定調査の項目を、いまの状態でタップしてください</h2>
+<p class="lead">介護認定の基本調査に沿った項目です。最初の選択はサンプルなので、ご本人に合わせて変更してください。</p>${g}${cog}${med}`}
+
+function v2(){return `
+<h2>旅の条件をうかがいます</h2>
+<p class="lead">高齢者の旅行に必要な項目です。</p>
+<div class="card">
+ <div class="field"><span class="lab">日数</span>${stepper('days',S.days,1,7,'日')}<p class="hint">${Math.max(0,S.days-1)}泊</p></div>
+ <div class="field"><span class="lab">主な移動手段</span>${chips('transport',TRANSPORT,S.transport)}</div>
+ <div class="field"><span class="lab">車いす</span>${chips('wheel',WHEEL,S.wheel)}</div>
+ <div class="field"><span class="lab">食事の形態</span>${chips('meal',MEAL,S.meal)}</div>
+ <div class="field"><span class="lab">宿泊先に必要な設備（複数選択）</span>${chips('lodge',LODGE,S.lodge,true)}</div>
+</div>
+<div class="card">
+ <h3>ご希望の支援</h3>
+ <div class="field"><span class="lab">移動介助（乗降・移乗の補助）</span>${segS('moveAssist',['あり','なし'],S.moveAssist)}
+  ${S.moveAssist==='あり'?`<span class="lab" style="margin-top:6px">移動の区間数（自宅→駅、駅→宿など）</span>${stepper('segments',S.segments,1,20,'区間')}`:''}</div>
+ <div class="field"><span class="lab">同行支援（介助者が旅行に同行）</span>${segS('escort',['あり','なし'],S.escort)}</div>
+ <div class="field"><span class="lab">現地調査（事前に段差・トイレ・動線を確認）</span>${segS('survey',['あり','なし'],S.survey)}
+  ${S.survey==='あり'?`<span class="lab" style="margin-top:6px">調査する場所（宿泊先・観光先など）</span>${stepper('sites',S.sites,1,8,'か所')}`:''}</div>
+</div>`}
+
+function v3(){
+ const a=assess(),{r,w}=reasons();
+ const pos=Math.min(100,a.total/a.max*100*2.2); // 実用域を広げて表示
+ const cl=a.level==='A'?'':'w';
+ return `
+<h2>アセスメント結果</h2>
+<p class="lead">${esc(S.name||'ご本人')}さまの状態と旅の条件から、必要な支援をまとめました。</p>
+<div class="card">
+ <div class="level"><b>レベル${a.level}</b><span class="pill ${cl}">${a.name}</span><span>合計 ${a.total} 点</span></div>
+ <div class="gauge" role="img" aria-label="介助の必要度"><i style="left:${pos}%"></i></div>
+ <div class="gauge-l"><span>A 見守り</span><span>B 部分介助</span><span>C 全面介助</span></div>
+</div>
+<div class="card"><h3>推奨する体制</h3>
+ <ul class="notes">
+  <li>介助者 <b>${a.staff}名</b>（${a.nurse?`看護師 ${a.nurse}名`:''}${a.nurse&&a.care?'＋':''}${a.care?`${S.family==='あり'?'サポート同行':'介助同行'} ${a.care}名`:''}）</li>
+  <li>${S.escort==='あり'?'ご希望どおり同行支援を含めています。':'現在は同行支援なしです。'}</li>
+ </ul>
+</div>
+${a.need.length?`<div class="card"><h3>介助が必要な項目</h3><div class="need">${a.need.map(([k,v])=>`<span class="pill ${v===2?'w':''}">${esc(k)}：${ADL_OPT[v]}</span>`).join('')}</div></div>`:''}
+<div class="card"><h3>旅行で押さえること</h3>
+ <ul class="notes">${w.map(t=>`<li class="w">${esc(t)}</li>`).join('')}${r.map(t=>`<li>${esc(t)}</li>`).join('')}</ul>
+</div>`}
+
+function summaryText(){
+ const q=calc(),a=q.a;
+ const lines=[
+ "【's 介護旅行 お見積り・ご注文】",
+ '見積番号：'+QNO+'　発行日：'+fmtD(today),
+ '宛名：'+(S.name||'お客様')+' 様'+(S.age?'（'+S.age+'歳）':'')+'　'+S.care,
+ '旅程：'+S.days+'日／'+q.nights+'泊　移動：'+S.transport,
+ 'アセスメント：レベル'+a.level+'（'+a.name+'）　推奨体制：'+a.staff+'名',
+ '',
+ ...q.L.map(l=>'・'+l.name+'　'+yen(l.unit)+' × '+l.qty+l.unitLabel+' ＝ '+yen(l.amt)),
+ '',
+ '小計 '+yen(q.sub)+'　消費税 '+yen(q.tax)+'　合計 '+yen(q.total)+'（税込）',
+ '※旅行中の交通費・宿泊費・食事代などの実費は別途です。'
+ ];
+ if(S.order)lines.push('','注文に同意：'+S.applicant+'　'+S.order.at+'　注文番号 '+S.order.id);
+ return lines.join('\n');
+}
+
+function v4(){
+ const q=calc();
+ const rows=q.L.map(l=>`<tr><td>${esc(l.name)}${l.detail?`<small>${esc(l.detail)}</small>`:''}</td><td>${yen(l.unit)}</td><td>${l.qty}${l.unitLabel}</td><td>${yen(l.amt)}</td></tr>`).join('');
+ const prices=Object.keys(PRICE_DEF).map(k=>`<label>${PRICE_DEF[k][0]}（${PRICE_DEF[k][2]}）<input type="number" inputmode="numeric" data-price="${k}" value="${P[k]}" min="0" step="500"></label>`).join('');
+ let end;
+ if(S.order){
+  end=`<div class="done"><h3>ご注文を承りました</h3>
+   <p style="margin:0">注文番号 <b>${S.order.id}</b>　${esc(S.order.at)}<br>申込者：${esc(S.applicant)} 様　合計 <b>${yen(q.total)}</b>（税込）</p>
+   <p class="hint" style="margin-top:8px">この画面の同意記録です。下の控えをコピーして、's の担当者へお送りください。</p>
+   <textarea id="memo" readonly>${esc(summaryText())}</textarea>
+   <button class="btn" style="margin-top:10px" data-act="copy">控えをコピー</button>
+   <button class="btn ghost" style="margin-top:8px" data-act="reset">最初からやり直す</button></div>`;
+ }else{
+  end=`<div class="consent"><h3 style="margin-bottom:12px">ご注文の確認</h3>
+   <div class="field"><label for="applicant">申込者のお名前</label><input type="text" id="applicant" data-in="applicant" value="${esc(S.applicant)}" placeholder="ご本人またはご家族のお名前" autocomplete="off"></div>
+   <label class="check"><input type="checkbox" id="agree" data-chk="agree" ${S.agree?'checked':''}><span>アセスメント結果と上記の見積内容を確認し、注文に同意します。実費を含む最終金額は、確定後にご案内があることを理解しました。</span></label>
+   <button class="btn" id="orderBtn" data-act="order" style="margin-top:12px" ${S.agree&&S.applicant.trim()?'':'disabled'}>この内容で注文する</button></div>`;
+ }
+ return `
+<h2>お見積書</h2>
+<p class="lead">内容を確認して、下のボタンで注文できます。</p>
+<div class="card">
+ <div class="q-head"><div class="logo">'s</div><div class="q-meta">見積番号 ${QNO}<br>発行日 ${fmtD(today)}<br>有効期限 ${fmtD(valid)}</div></div>
+ <p class="q-to">${esc(S.name||'お客様')} 様</p>
+ <p class="hint" style="margin-bottom:10px">介護旅行　${S.days}日／${q.nights}泊　アセスメント：レベル${q.a.level}（${q.a.name}）</p>
+ <div class="tbl"><table><thead><tr><th>項目</th><th>単価</th><th>数量</th><th>金額</th></tr></thead><tbody>${rows}</tbody></table></div>
+ <div class="sum"><div><span>小計</span><span>${yen(q.sub)}</span></div><div><span>消費税（10%）</span><span>${yen(q.tax)}</span></div><div class="tot"><span>合計</span><span>${yen(q.total)}</span></div></div>
+ <p class="fine">旅行中の交通費・宿泊費・食事代・入場料などの実費は、上記に含まれません。単価は仮設定です。担当者の確認後に確定します。</p>
+</div>
+<details class="card"><summary>単価を調整する（担当者向け）</summary><div class="prices">${prices}</div></details>
+${end}`}
+
+const VIEWS=[v0,v1,v2,v3,v4];
+
+/* ---------- 描画 ---------- */
+function render(keepScroll){
+ $('#app').innerHTML=VIEWS[S.step]();
+ $('#pbar').innerHTML=STEPS.map((_,i)=>`<i class="${i<=S.step?'on':''}"></i>`).join('');
+ $('#plabel').textContent=STEPS[S.step];
+ $('#pcount').textContent=(S.step+1)+' / '+STEPS.length;
+ $('#bBack').hidden=S.step===0;
+ $('#bNext').hidden=S.step===STEPS.length-1;
+ $('#bar').hidden=!!S.order;
+ updEst();
+ if(!keepScroll)window.scrollTo({top:0});
+}
+function updEst(){$('#est').textContent=yen(calc().total)}
+function setPath(k,v){
+ const p=k.split('.');let o=S;
+ for(let i=0;i<p.length-1;i++)o=o[p[i]];
+ o[p[p.length-1]]=v;
+}
+function getPath(k){return k.split('.').reduce((o,x)=>o[x],S)}
+
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-act]');if(!b)return;
+ const act=b.dataset.act,k=b.dataset.k;
+ if(act==='set'){setPath(k,b.dataset.n?Number(b.dataset.v):b.dataset.v);render(true)}
+ else if(act==='tog'){const arr=getPath(k),v=b.dataset.v,i=arr.indexOf(v);i>=0?arr.splice(i,1):arr.push(v);render(true)}
+ else if(act==='stp'){const n=getPath(k)+Number(b.dataset.d);setPath(k,Math.min(Number(b.dataset.max),Math.max(Number(b.dataset.min),n)));render(true)}
+ else if(act==='next'){if(S.step<STEPS.length-1){S.step++;render()}}
+ else if(act==='back'){if(S.step>0){S.step--;render()}}
+ else if(act==='order'){
+  if(!(S.agree&&S.applicant.trim()))return;
+  const t=new Date();
+  S.order={id:'O-'+ymd+'-'+seq,at:fmtD(t)+' '+pad(t.getHours())+':'+pad(t.getMinutes())};
+  render();
+ }
+ else if(act==='copy'){
+  const ta=$('#memo');
+  const fallback=()=>{ta.focus();ta.select();b.textContent='選択しました。コピーしてください'};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(ta.value).then(()=>{b.textContent='コピーしました'}).catch(fallback)}else fallback();
+ }
+ else if(act==='reset'){location.reload()}
+});
+document.addEventListener('input',e=>{
+ const t=e.target;
+ if(t.dataset.in){S[t.dataset.in]=t.value;if(t.dataset.in==='applicant')syncOrder()}
+ else if(t.dataset.price){P[t.dataset.price]=Math.max(0,Number(t.value)||0);updEst();refreshQuote()}
+});
+document.addEventListener('change',e=>{
+ const t=e.target;
+ if(t.dataset.chk){S[t.dataset.chk]=t.checked;syncOrder()}
+});
+function syncOrder(){const b=$('#orderBtn');if(b)b.disabled=!(S.agree&&S.applicant.trim())}
+function refreshQuote(){
+ /* 単価入力中は入力欄を保ったまま、表と合計だけ更新する */
+ const q=calc();
+ const tb=document.querySelector('.tbl tbody');
+ if(tb)tb.innerHTML=q.L.map(l=>`<tr><td>${esc(l.name)}${l.detail?`<small>${esc(l.detail)}</small>`:''}</td><td>${yen(l.unit)}</td><td>${l.qty}${l.unitLabel}</td><td>${yen(l.amt)}</td></tr>`).join('');
+ const s=document.querySelector('.sum');
+ if(s)s.innerHTML=`<div><span>小計</span><span>${yen(q.sub)}</span></div><div><span>消費税（10%）</span><span>${yen(q.tax)}</span></div><div class="tot"><span>合計</span><span>${yen(q.total)}</span></div>`;
+}
+render();
+</script>
+</body>
+</html>
